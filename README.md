@@ -1,2 +1,2 @@
-# kogito-on-ocp
+# Kogito on OCP
 This repository is a starting point for developers who want to start with Kogito on OCP 4.
