@@ -43,21 +43,6 @@ Kogito is a cloud-native business automation technology for building cloud-ready
 [2] https://marketplace.visualstudio.com/items?itemName=kie-group.vscode-extension-kogito-bundle
 
 
-== Creating a Maven project for a Kogito service
-
-
-[source,bash]
-----
-mvn archetype:generate \
-    -DarchetypeGroupId=org.kie.kogito \
-    -DarchetypeArtifactId=kogito-quarkus-archetype \
-    -DgroupId=org.acme \
-    -DartifactId=sample-kogito \
-    -DarchetypeVersion=0.14.0 \
-    -Dversion=1.0-SNAPSHOT
-
-----
-
 == Deploying Kogito services on OpenShift
 
 To help you deploy your services on OpenShift, Kogito provides an operator and a command-line interface (CLI):
@@ -125,6 +110,18 @@ oc get kogitobuilds,kogitodataindices,kogitoinfras,kogitojobsservices,kogitomgmt
 
 
 
+
+
+
+
+
+== Application examples
+
+https://github.com/kiegroup/kogito-examples/blob/stable/process-quarkus-example/README.md
+
+
+
+
 == Decision-authoring assets in Kogito [1]
 
 
@@ -132,3 +129,20 @@ oc get kogitobuilds,kogitodataindices,kogitoinfras,kogitojobsservices,kogitomgmt
 
 [1] https://docs.jboss.org/kogito/release/latest/html_single/#ref-decision-authoring-assets_kogito-developing-decision-services
 
+
+
+
+== Creating a Maven project for a Kogito service
+
+
+[source,bash]
+----
+mvn archetype:generate \
+    -DarchetypeGroupId=org.kie.kogito \
+    -DarchetypeArtifactId=kogito-quarkus-archetype \
+    -DgroupId=org.acme \
+    -DartifactId=sample-kogito \
+    -DarchetypeVersion=0.14.0 \
+    -Dversion=1.0-SNAPSHOT
+
+----
