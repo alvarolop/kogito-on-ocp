@@ -12,18 +12,24 @@ v1.0, 2020-08
 // :sectlinks:
 // Create the Table of contents here
 toc::[]
-//:imagesdir: images
+:imagesdir: docs/images
 
-This repository is a starting point for developers who want to start with Kogito on OCP 4.
+This repository is a starting point for developers who want to start with Kogito on OCP 4. This is a summary of the information provided in the official documentation.
+
+
 
 
 == What is Kogito
 
-Kogito is a cloud-native business automation technology for building cloud-ready business applications. Kogito is designed specifically to excel in a hybrid cloud environment and to be adaptable to your domain and tooling needs. The core objective of Kogito is to help you mold a set of business processes and decisions into your own domain-specific cloud-native set of services [1].
+Kogito is a cloud-native business automation technology for building cloud-ready business applications. It is designed specifically to excel in a hybrid cloud environment and to be adaptable to your domain and tooling needs. The core objective of Kogito is to help you mold a set of business processes and decisions into your own domain-specific cloud-native set of services [1].
 
 Please, follow this https://kogito.kie.org/get-started/[link] to access Kogito main website.
 
 [1] https://docs.jboss.org/kogito/release/latest/html_single/#con-kogito-automation_kogito-docs
+
+
+
+
 
 
 
@@ -34,48 +40,113 @@ Please, follow this https://kogito.kie.org/get-started/[link] to access Kogito m
 To help you deploy your services on OpenShift, Kogito provides an operator and a command-line interface (CLI):
 
 
-*Kogito Operator*: An operator that guides you through the deployment process. [1]
-*Kogito command-line interface (CLI)*: A CLI tool that enables you to interact with the Kogito Operator for deployment tasks. [2]
-
-=== Kogito CLI
+* *https://github.com/kiegroup/kogito-cloud-operator[Kogito Operator]*: An operator that guides you through the deployment process.
+* *https://github.com/kiegroup/kogito-cloud-operator/releases[Kogito command-line interface (CLI)]*: A CLI tool that enables you to interact with the Kogito Operator for deployment tasks.
 
 
-=== Kogito operator dependencies
 
-Before installing the Kogito operator you may need to install two operators: Infinspan and 
 
-=== Install Kogito operator
 
-First, create a project to host the Kogito deployment:
+
+
+=== Kogito operator
+
+The Kogito Operator is written in Go and is built with the Operator SDK. The Kogito Operator uses the Kubernetes API for most of the deployment tasks that the operator facilitates and for other internal operations.
+
+==== Installing the operator
+
+
+Installing the operator is as simple as creating an Openshift project for it and follow the steps described in the next images:
 
 [source,bash]
 ----
-oc new-project kogito-project --display-name="Kogito"
+oc new-project kogito --display-name="Kogito"
 ----
 
-Second, look for the Kogito operator on the `Operator Hub`:
+*Step 1*. Select your project and look for the Kogito operator on section `Operators` > `Operator Hub`. 
 
-image::./docs/images/100-operator-install-kogito.png[Install Kogito Operator]
+image::100-operator-install-kogito.png[Install Kogito Operator]
 
-Third, configure the operator subscription:
+*Step 2*. Configure the operator subscription. As of today, the only version that provides the Kogito CRDs of this workshop is Kogito 0.14 which is provided through the `alpha` channel. You may need to select a different channel in the future.
 
-image::./docs/images/101-operator-subscribe-kogito.png[Subscribe to Kogito Operator]
+image::101-operator-subscribe-kogito.png[Subscribe to Kogito Operator]
 
+*Step 3*. After clicking install, navigate to `Operators` > `Installed operators` to see how several operators are being installed automatically.
 
-[1] https://github.com/kiegroup/kogito-cloud-operator
-[2] https://github.com/kiegroup/kogito-cloud-operator/releases
-
-
+image::102-installed-operators.png[Check installed operators]
 
 
+When all four operators have Status Successful, you are ready to use Kogito on your cluster. 
+
+==== Kogito Operator dependencies on third-party operators
+
+The Kogito Operator uses the following third-party operators to deploy Kogito service infrastructure components:
+
+
+* *Infinispan Operator*: Used to deploy Infinispan Server instances for process data persistence in Kogito services
+
+* *Strimzi Operator*: Used to deploy Apache Kafka clusters with Zookeeper for messaging in Kogito services
+
+* *Keycloak Operator*: Used to deploy Keycloak server instances for security and single sign-on capabilities in Kogito services
+
+
+=== Kogito CLI
+
+The Kogito Operator and command-line interface (CLI) support the following options for building and deploying Kogito services on OpenShift:
+
+* Git source build and deployment
+
+* Binary build and deployment
+
+* File build and deployment
+
+* Native build and deployment
+
+Examples of usage taken from the https://docs.jboss.org/kogito/release/latest/html_single/#con-kogito-operator-deployment-options_kogito-deploying-on-openshift[documentation]:
+
+[source,bash]
+----
+// Use the provisioned namespace in your OpenShift cluster
+$ kogito use-project PROJECT_NAME
+
+
+// 1. Deploys a new Kogito service from a Git source
+$ kogito deploy-service travels https://github.com/kiegroup/kogito-examples/kogito-travel-agency/extended --context-dir travels
+
+
+// 2. Creates the Kogito service
+$ kogito deploy-service travels
+// Deploys to OpenShift using binary build
+$ oc start-build travels-binary --from-dir=target/
+
+
+// 3. Example Kogito service deployment from a local file
+$ kogito deploy-service travels /tmp/kogito-examples/kogito-travel-agency/extended/travels/src/main/resources/org/acme/travels/travels.bpmn2
+
+
+// 4.A Example Kogito service native build from a local source directory
+kogito deploy-service travels --native
+
+// 4.B Example Kogito service native build from a Git repository source directory
+kogito deploy-service travels https://github.com/kiegroup/kogito-examples/kogito-travel-agency/extended --context-dir travels --native
+
+----
+
+For native compilation, kogito uses ahead-of-time (AOT) compilation. For more information about it, see the GraalVM Native Image https://www.graalvm.org/reference-manual/native-image/[documentation].
 
 
 
-== Using Kogito for Openshift
+For the full documentation of the kogito CLI commands, please check the following https://docs.jboss.org/kogito/release/latest/html_single/#ref-kogito-cli-operations_kogito-deploying-on-openshift[link].
+
+
+
+
+== Understanding Kogito for Openshift
 
 
 === Kogito Operator architecture
 
+The Kogito Operator uses the following custom resources to deploy Kogito domain-specific services (the services that you develop), Kogito supporting services, and middleware infrastructure components:
 
 *KogitoBuild*: Defines the build configurations for Kogito domain-specific services deployed on OpenShift
 
@@ -84,6 +155,96 @@ image::./docs/images/101-operator-subscribe-kogito.png[Subscribe to Kogito Opera
 *KogitoDataIndex, KogitoJobsService, and KogitoMgmtConsole*: Define the deployment configurations for the Kogito Data Index Service, Jobs Service, and Management Console. Kogito provides a Data Index Service that stores all Kogito events related to processes, tasks, and domain data. 
 
 *KogitoInfra*: Defines the relevant middleware infrastructure component or third-party operator for the Kogito service, such as Infinispan for persistence or Apache Kafka for messaging
+
+
+=== Kogito operator interactions
+
+==== Infinispan
+
+After you install the Infinispan infrastructure, to enable Infinispan persistence for a Kogito service edit the spec.infinispan configuration in the KogitoRuntime custom resource.
+
+
+.Example Kogito service custom resource with Infinispan persistence enabled
+[souce, bash]
+----
+apiVersion: app.kiegroup.org/v1alpha1
+kind: KogitoBuild
+metadata:
+  name: travels
+spec:
+  type: RemoteSource
+  gitSource:
+    uri: "https://github.com/kiegroup/kogito-examples/"
+    contextDir: kogito-travel-agency/extended/travels
+  envs:
+    - name: MAVEN_ARGS_APPEND
+      value: -Ppersistence
+---
+apiVersion: app.kiegroup.org/v1alpha1
+kind: KogitoRuntime
+metadata:
+  name: travels
+spec:
+  infinispan:
+    useKogitoInfra: true
+
+----
+
+
+==== Apache Kafka
+
+When you install the Kafka infrastructure for your Kogito project, the Kogito Operator creates a KogitoInfra custom resource to handle the Kafka cluster deployment for you.
+
+
+.Example Kogito service custom resource with Kafka messaging enabled
+[source,bash]
+----
+apiVersion: app.kiegroup.org/v1alpha1
+kind: KogitoBuild
+metadata:
+  name: travels
+spec:
+  type: RemoteSource
+  gitSource:
+    uri: "https://github.com/kiegroup/kogito-examples/"
+    contextDir: kogito-travel-agency/extended/travels
+  envs:
+    - name: MAVEN_ARGS_APPEND
+      value: -Pevents
+---
+apiVersion: app.kiegroup.org/v1alpha1
+kind: KogitoRuntime
+metadata:
+  name: travels
+spec:
+  kafka:
+    useKogitoInfra: true
+----
+
+
+==== Kogito Data Index Service
+
+
+
+
+==== Kogito Jobs Service
+
+
+
+
+==== Kogito Trusty Service
+
+
+
+
+==== Kogito Explainability Service
+
+
+
+
+==== Prometheus
+
+
 
 
 
@@ -102,6 +263,8 @@ Check all the Custom Resources (CRs) created:
 ----
 oc get kogitobuilds,kogitodataindices,kogitoinfras,kogitojobsservices,kogitomgmtconsoles,kogitoruntimes,kogitotrusties
 ----
+
+
 
 
 
